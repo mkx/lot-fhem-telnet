@@ -38,15 +38,24 @@ class daemon(threading.Thread):
         while True:
             # read from LoT
             data, addr = sock.recvfrom(1024)
-            j = json.loads(data)
-            id = j["id"]
-            data = j["data"]
-            # send to telnet
 
-            m = re.match(r"([\D]*)([.\d]*)", data[0])
-            data = ": ".join(m.groups())
+            try:
+                j = json.loads(data)
+
+                if not 'type' in j:
+                    continue
+                if not j['type'] == 'WirelessMessage':
+                    continue
+
+                id = j["id"]
+                data = j["data"]
+
+                m = re.match(r"([\D]*)([.\d]*)", data[0])
+                data = ": ".join(m.groups())
             
-            self.socket.send("TEMP %s %s\n" % (id, data));
+                self.socket.send("TEMP %s %s\n" % (id, data));
+            except:
+                pass
  
         # close connection
         self.socket.close()
